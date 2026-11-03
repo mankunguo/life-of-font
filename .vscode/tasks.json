@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Preview Life of Font",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    { "label": "Test Life of Font", "type": "npm", "script": "check", "problemMatcher": [] }
+  ]
+}
