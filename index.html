@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Life of Font — a cellular automata type experiment by Mankun Guo. Generate vector letterforms and export SVG artwork or OpenType fonts.">
+  <title>Life of Font</title>
+  <link rel="icon" href="./assets/favicon.svg?v=black-square" type="image/svg+xml">
+  <link rel="preload" href="./assets/fonts/FiraCode-Medium.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./src/app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="masthead">
+      <a class="wordmark" href="./" aria-label="Life of Font home">Life of Font</a>
+      <div class="header-actions">
+        <a class="text-button" href="https://mankunguo.com/life-of-font-2">Info <span aria-hidden="true">↗</span></a>
+        <span class="author">@ Mankun Guo</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="controls" aria-label="Typography and automaton controls">
+        <form id="inputForm" class="control-section input-section">
+          <h2>Input</h2>
+          <div class="section-body">
+            <div class="field-row">
+              <label id="fontLabel" for="fontTrigger">Font:</label>
+              <div class="dropdown font-dropdown" data-dropdown="fontSelect">
+                <select id="fontSelect" hidden aria-hidden="true" tabindex="-1"><option value="archivo">Archivo Black</option><option value="fira">Fira Code</option></select>
+                <button id="fontTrigger" class="dropdown-trigger" type="button" role="combobox" aria-label="Input font" aria-haspopup="listbox" aria-expanded="false" aria-controls="fontOptions"><span class="dropdown-value">−</span><span class="dropdown-arrow" aria-hidden="true"></span></button>
+                <div class="dropdown-menu" hidden>
+                  <div id="fontOptions" class="dropdown-options" role="listbox" aria-label="Input fonts"></div>
+                  <button id="importFont" class="import-font" type="button">Import your font <span aria-hidden="true">+</span></button>
+                </div>
+              </div>
+            </div>
+            <input id="fontFile" class="visually-hidden" type="file" accept=".otf,.ttf,.woff,.woff2" multiple tabindex="-1" aria-label="Choose font files">
+            <div class="field-row"><label for="textInput">Text:</label><input id="textInput" type="text" value="M" maxlength="32" autocomplete="off" spellcheck="false" required aria-label="Example text"></div>
+            <div class="field-row"><label for="cellSize">Cells size:</label><div class="cell-size-field"><input id="cellSize" type="number" min="2" max="40" step="1" value="8" required><span>px</span></div></div>
+            <div class="action-row"><button id="generateButton" class="button primary generate-button" type="submit">Generate</button></div>
+          </div>
+        </form>
+
+        <section class="control-section rule-section" aria-labelledby="ruleHeading">
+          <h2 id="ruleHeading">Rule</h2>
+          <div class="section-body">
+            <div class="field-row rule-row"><span id="bornLabel">Cell born:</span><div id="bornRow" class="number-toggles" role="group" aria-labelledby="bornLabel"></div></div>
+            <div class="field-row rule-row"><span id="aliveLabel">Cell alive:</span><div id="aliveRow" class="number-toggles" role="group" aria-labelledby="aliveLabel"></div></div>
+            <p class="rule-note">Otherwise cell die</p>
+          </div>
+        </section>
+
+        <section class="control-section output-section" aria-labelledby="outputHeading">
+          <h2 id="outputHeading">Output</h2>
+          <div class="section-body">
+            <div class="field-row">
+              <label for="stepGapTrigger">Step Gap:</label>
+              <div class="dropdown" data-dropdown="stepGap">
+                <select id="stepGap" hidden aria-hidden="true" tabindex="-1"><option value="1">1</option><option value="2">2</option><option value="3" selected>3</option><option value="4">4</option><option value="6">6</option><option value="8">8</option><option value="12">12</option></select>
+                <button id="stepGapTrigger" class="dropdown-trigger" type="button" role="combobox" aria-label="Step gap" aria-haspopup="listbox" aria-expanded="false" aria-controls="stepGapOptions"><span class="dropdown-value">3</span><span class="dropdown-arrow" aria-hidden="true"></span></button>
+                <div class="dropdown-menu" hidden><div id="stepGapOptions" class="dropdown-options" role="listbox" aria-label="Step gap options"></div></div>
+              </div>
+            </div>
+            <div class="field-row">
+              <label for="speedTrigger">Speed:</label>
+              <div class="dropdown" data-dropdown="speed">
+                <select id="speed" hidden aria-hidden="true" tabindex="-1"><option value="6">6 fps</option><option value="12">12 fps</option><option value="24" selected>24 fps</option><option value="30">30 fps</option><option value="60">60 fps</option></select>
+                <button id="speedTrigger" class="dropdown-trigger" type="button" role="combobox" aria-label="Animation speed" aria-haspopup="listbox" aria-expanded="false" aria-controls="speedOptions"><span class="dropdown-value">24 fps</span><span class="dropdown-arrow" aria-hidden="true"></span></button>
+                <div class="dropdown-menu" hidden><div id="speedOptions" class="dropdown-options" role="listbox" aria-label="Animation speeds"></div></div>
+              </div>
+            </div>
+            <div class="action-row"><div class="play-actions"><button id="stepButton" class="button icon-button" type="button" aria-label="Advance one generation" title="Next generation (→)"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 3v14l10-7L4 3zm11 0h2v14h-2z"/></svg></button><button id="playButton" class="button primary play-button" type="button">Play</button></div></div>
+          </div>
+        </section>
+
+        <div class="step-section">
+          <div class="step-readout"><span>Step</span><output id="generation" class="generation" aria-label="Current generation">0</output></div>
+          <button id="resetButton" class="button primary reset-button" type="button" aria-label="Reset to original cells" title="Reset (R)"><svg viewBox="0 0 32 32" aria-hidden="true"><path class="reset-ring" d="M27 9A12 12 0 0 0 5 13M5 23a12 12 0 0 0 22-4"/><path d="m1 12 8-2-3 8zM31 20l-8 2 3-8z"/></svg></button>
+        </div>
+      </aside>
+
+      <section class="specimen-panel" aria-label="Live vector specimen">
+        <div class="specimen-toolbar">
+          <div class="zoom-tools" role="group" aria-label="Zoom controls"><button id="zoomOut" type="button" aria-label="Zoom out">−</button><button id="fitButton" type="button" aria-label="Reset zoom to fit" title="Fit specimen (0)">100%</button><button id="zoomIn" type="button" aria-label="Zoom in">+</button></div>
+          <div class="segmented" role="group" aria-label="Cell appearance"><button id="cellsView" type="button" aria-pressed="true">cells</button><button id="solidView" type="button" aria-pressed="false">solid</button></div>
+          <button id="gridButton" class="button grid-button" type="button" aria-label="Show cell grid" aria-pressed="false" title="Toggle grid (G)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 1h22v22H1zm7 0v22m8-22v22M1 8h22M1 16h22"/></svg></button>
+        </div>
+
+        <div id="viewport" class="specimen-viewport">
+          <svg id="specimen" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cellular automata letterform" preserveAspectRatio="xMidYMid meet">
+            <defs><pattern id="cellGrid" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M1 0H0V1" fill="none" stroke="#000000" stroke-width="0.025"/></pattern></defs>
+            <rect id="gridOverlay" fill="url(#cellGrid)" width="100%" height="100%" visibility="hidden"/>
+            <path id="cellArtwork" fill="#000000"/>
+          </svg>
+          <div id="emptyState" class="empty-state" hidden><p>No living cells.</p><span>Reset the seed or try another rule.</span></div>
+          <div id="loadingState" class="loading-state">Preparing type…</div>
+        </div>
+
+        <div class="export-wrap">
+          <div id="exportMenu" class="export-menu" hidden>
+            <button id="exportSVG" type="button">Vector (.svg)</button>
+            <button id="exportFont" type="button">Font (.otf)</button>
+          </div>
+          <button id="exportButton" class="button primary export-button" type="button" aria-expanded="false" aria-controls="exportMenu">Export</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <noscript><div class="noscript">Please enable JavaScript to use Life of Font.</div></noscript>
+</body>
+</html>
